@@ -52,11 +52,15 @@ use kube::runtime::controller::Error as KubeContError;
 // Context
 use crate::context::*;
 
+// CRD
+use crate::crd::{AiOperator, AiOperatorResource, AiOperatorAction, create_crd};
+
 // For logging
 use pretty_env_logger;
 
-pub mod error;
 pub mod context;
+pub mod crd;
+pub mod error;
 
 #[tokio::main]
 async fn main() -> Result <(), OperatorError> {
@@ -66,9 +70,13 @@ async fn main() -> Result <(), OperatorError> {
     let kc: Client = Client::try_default()
         .await
         .expect("Expected a valid KUBECONFIG file");
-    println!("Hello, world!");
+    debug!("---- Before creating crd ---");
+    create_crd(kc.clone()).await;
+    debug!("---- After creating crd ---");
+
+    println!("Starting AiOperator...");
     // Get the API client
-    let api: Api<Pod> = Api::all(kc.clone());
+    let api: Api<AiOperator> = Api::all(kc.clone());
     let context: Arc<ContextData> = Arc::new(ContextData::new(kc.clone()));
 
     // Control loop

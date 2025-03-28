@@ -36,6 +36,20 @@ pub struct AiOperatorStatus {
     pub state_hash: String,
 }
 
+/// Action to be taken upon an `AiOperator` resource during reconciliation
+enum AiOperatorAction {
+    /// Create the subresources, this includes spawning `n` pods with Nextcloud service
+    Create,
+    /// Update subresurces and replicas
+    Update,
+    /// Delete all subresources created in the `Create` phase
+    Delete,
+    /// This `Nextcloud` resource is in desired state and requires no actions to be taken
+    NoOp,
+}
+
+
+
 /// Creates the AiOperator CRD
 /// This helps to avoid the manual creation of the AiOperator CRD
 /// TODO: return proper values

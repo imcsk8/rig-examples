@@ -45,33 +45,21 @@ use kube::runtime::watcher::Config;
 //use futures_util::stream::stream::StreamExt;
 use futures_util::StreamExt;
 
+// Our errors
+use crate::error::*;
 use kube::runtime::controller::Error as KubeContError;
+
+// Context
+use crate::context::*;
 
 // For logging
 use pretty_env_logger;
 
-/// ContextData just wraps `kube::client::Client` so it can be added implementations
-/// Context injected with each `reconcile` and `on_error` method invocation.
-struct ContextData {
-    /// Kubernetes client to make Kubernetes API requests with. Required for K8S resource management.
-    client: Client,
-}
-
-/// Enum for managing different types of errors, needed because the reconciler run function
-/// needs to implement StdError
-#[derive(Debug, Error)]
-pub enum ExampleError {
-    /// Errors reported by the kube-rs crate
-    #[error("Kubernetes Example Operator Error: {source}")]
-    KubeError {
-        #[from]
-        source: kube::Error,
-    },
-    // TODO: add more types of errors if needed
-}
+pub mod error;
+pub mod context;
 
 #[tokio::main]
-async fn main() -> Result <(), ExampleError> {
+async fn main() -> Result <(), OperatorError> {
     pretty_env_logger::init_timed();
     info!("Starting operator");
     // Load the client
@@ -83,10 +71,36 @@ async fn main() -> Result <(), ExampleError> {
     let api: Api<Pod> = Api::all(kc.clone());
     let context: Arc<ContextData> = Arc::new(ContextData::new(kc.clone()));
 
-    // Instance of a controller
+    // Control loop
+    run_controller(api.clone(), context).await;
+
+    Ok(())
+}
+
+/// Check reconciliation data
+async fn reconcile(pod: Arc<Pod>, context: Arc<ContextData>
+) -> Result<Action, OperatorError> {
+    info!("Status: {:?}", pod.status);
+    let name = pod.name_any();
+    info!("Resource name: {}", name);
+    // Reconcile every 10 seconds
+    Ok(Action::requeue(Duration::from_secs(10)))
+}
+
+/// Acctions taken when reonciliation fails
+fn on_error(pod: Arc<Pod>, error: &OperatorError, _context: Arc<ContextData>
+) -> Action {
+    eprintln!("Error: {:?}", error);
+    info!("Error: {:?}", error);
+    Action::requeue(Duration::from_secs(5))
+}
+
+/// Control loop
+async fn run_controller(api: Api<Pod>, context: Arc<ContextData>) {
     Controller::new(api.clone(), Config::default())
         .run(reconcile, on_error, context)
         .for_each(|reconciliation_result| async move {
+            //check_reconciliation_result(reconciliation_result);
             match reconciliation_result {
                 Ok(r) => {
                     info!("Reconciliation successful. Resource: {:?}", r);
@@ -103,36 +117,4 @@ async fn main() -> Result <(), ExampleError> {
                 }
             }
         }).await;
-
-    Ok(())
-}
-
-/// Check reconciliation data
-async fn reconcile(pod: Arc<Pod>, context: Arc<ContextData>
-) -> Result<Action, ExampleError> {
-    info!("Status: {:?}", pod.status);
-    let name = pod.name_any();
-    info!("Resource name: {}", name);
-    // Reconcile every 10 seconds
-    Ok(Action::requeue(Duration::from_secs(10)))
-}
-
-/// Acctions taken when reonciliation fails
-fn on_error(pod: Arc<Pod>, error: &ExampleError, _context: Arc<ContextData>
-) -> Action {
-    eprintln!("Error: {:?}", error);
-    info!("Error: {:?}", error);
-    Action::requeue(Duration::from_secs(5))
-}
-
-/// Context data handler
-impl ContextData {
-    /// Constructs a new instance of ContextData.
-    ///
-    /// # Arguments:
-    /// - `client`: A Kubernetes client to make Kubernetes REST API requests with. Resources
-    /// will be created and deleted with this client.
-    pub fn new(client: Client) -> Self {
-        ContextData { client }
-    }
 }

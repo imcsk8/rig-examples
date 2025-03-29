@@ -6,7 +6,7 @@ use log::{info};
 //use std::sync::{Arc, Mutex};
 //use core::ops::{Deref, DerefMut};
 
-pub const RESOURCE_NAME: &str = "nextclouds.sotolitolabs.com";
+pub const RESOURCE_NAME: &str = "aioperator.nortk.com";
 
 /// Struct corresponding to the Specification (`spec`) part of the `AiOperator` resource, directly
 /// reflects context of the `aioperator.yaml` file to be found in this repository.
@@ -15,7 +15,7 @@ pub const RESOURCE_NAME: &str = "nextclouds.sotolitolabs.com";
 #[kube(
     group = "nortk.com",
     version = "v1",
-    kind = "AiOpertator",
+    kind = "AiOperator",
     plural = "aioperator",
     derive = "PartialEq",
     namespaced
@@ -37,7 +37,7 @@ pub struct AiOperatorStatus {
 }
 
 /// Action to be taken upon an `AiOperator` resource during reconciliation
-enum AiOperatorAction {
+pub enum AiOperatorAction {
     /// Create the subresources, this includes spawning `n` pods with Nextcloud service
     Create,
     /// Update subresurces and replicas

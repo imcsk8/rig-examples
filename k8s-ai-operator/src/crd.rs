@@ -24,6 +24,7 @@ pub const RESOURCE_NAME: &str = "aioperator.nortk.com";
 pub struct AiOperatorSpec {
     pub version: String,
     pub prompt: String,
+    pub answer: String,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, Default, PartialEq, JsonSchema)]

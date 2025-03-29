@@ -4,7 +4,7 @@ use kube::client::Client;
 /// Context injected with each `reconcile` and `on_error` method invocation.
 pub struct ContextData {
     /// Kubernetes client to make Kubernetes API requests with. Required for K8S resource management.
-    client: Client,
+    pub client: Client,
 }
 
 /// Context data handler

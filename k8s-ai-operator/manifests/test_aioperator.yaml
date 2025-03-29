@@ -1,0 +1,10 @@
+apiVersion: nortk.com/v1
+kind: AiOperator # Identifier of the resource type.
+metadata:
+  name: test1
+  namespace: aioperator # Namespace must exist and account in KUBECONFIG must have sufficient permissions
+spec:
+  version: 0.0.1
+  prompt:  "Use the Rust rig library to create a program that sends this prompt to chatgpt"
+  answer: ""
+

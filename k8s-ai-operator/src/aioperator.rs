@@ -7,6 +7,18 @@ use kube::Client;
 use rig::{completion::Prompt, providers::openai};
 use dotenv::dotenv;
 
+use kube::api::{PatchParams};
+
+/*use kube::api::{
+    ObjectMeta,
+    DeleteParams,
+    Patch,
+    PatchParams,
+    ListParams,
+};*/
+
+
+
 
 /// Apply the changes
 pub async fn apply(
@@ -23,6 +35,23 @@ pub async fn apply(
     //info!("Result API: {}", aiop.spec.answer.to_string());
     info!("Result API: {}", answer);
 
+    /*let patch_params = PatchParams {
+        field_manager: Some("aioperator_field_manager".to_string()),
+        ..PatchParams::default()
+    };
+
+    let mut annotations: BTreeMap<String, String> = BTreeMap::new();
+    annotations.insert("installed".to_owned(), "false".to_owned());
+    let aioperators: Api<AiOperator> = Api::namespaced(client.clone(), &namespace);
+    let _result = aiop_api
+        .patch(
+            aiop.as_str(),
+            &patch_params,
+            &Patch::Apply(&pvc)
+        )
+        .await?;
+    */
+
 
     // TODO check if we need a success object
     Ok(AiOperatorStatus {
@@ -31,6 +60,7 @@ pub async fn apply(
         maintenance: false,
         waiting: false,
         last_backup: "N/A".to_string(),
+        answer: answer.clone(),
         state_hash: global_state_hash,
     })
 }

@@ -6,5 +6,4 @@ metadata:
 spec:
   version: 0.0.1
   prompt:  "Use the Rust rig library to create a program that sends this prompt to chatgpt"
-  answer: ""
 

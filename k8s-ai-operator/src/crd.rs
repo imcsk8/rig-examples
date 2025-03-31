@@ -24,7 +24,6 @@ pub const RESOURCE_NAME: &str = "aioperator.nortk.com";
 pub struct AiOperatorSpec {
     pub version: String,
     pub prompt: String,
-    pub answer: String,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, Default, PartialEq, JsonSchema)]
@@ -35,6 +34,7 @@ pub struct AiOperatorStatus {
     pub waiting: bool,
     pub last_backup: String,
     pub state_hash: String,
+    pub answer: String,
 }
 
 /// Action to be taken upon an `AiOperator` resource during reconciliation
